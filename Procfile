@@ -1,0 +1,1 @@
+web: gunicorn eventernote-api:app
