@@ -10,7 +10,7 @@ Crawl eventernote.com and expose JSON or RSS
 
 ## Run
 ```
-python -m flask run
+FLASK_ENV=development python app.py
 ```
 * Actor events as JSON: `localhost:5000/json/三森すずこ/2634`
 * Actor events as RSS: `localhost:5000/rss/三森すずこ/2634`
