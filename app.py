@@ -129,6 +129,27 @@ def events(actor_name: str, actor_id: str) -> List[Dict]:
 app = Flask(__name__)
 
 
+@app.route('/')
+def index():
+    return """
+I'am alive!<br/>
+/json/三森すずこ/2634: Events for 三森すずこ(id=2634) in JSON<br/>
+/rss/三森すずこ/2634: Events for 三森すずこ(id=2634) in RSS<br/>
+/debug
+"""
+
+
+@app.route('/debug')
+def debug():
+    return jsonify({
+        'events_cache': {
+            'actors_size': len(EVENTS_CACHE.keys()),
+            'actors': list(EVENTS_CACHE.keys()),
+            'events_size': sum(map(lambda a: len(a['data']), list(EVENTS_CACHE.values())))
+        }
+    })
+
+
 @app.route('/json/<name>/<_id>')
 def json(name: str, _id: str):
     return jsonify(events(actor_name=name, actor_id=_id))
