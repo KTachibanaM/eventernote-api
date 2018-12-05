@@ -1,2 +1,4 @@
 beautifulsoup4==4.6.3
 Flask==1.0.2
+feedgen==0.7.0
+pytz==2018.7

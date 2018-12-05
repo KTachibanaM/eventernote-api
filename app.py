@@ -4,10 +4,13 @@ import logging as xlogging
 import sys
 import os
 import time
+import pytz
 from typing import List, Dict
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
 from urllib.parse import quote
+from feedgen.feed import FeedGenerator
+from datetime import datetime
 from flask import Flask, jsonify
 
 logger = xlogging.getLogger("app.py")
@@ -52,22 +55,28 @@ class ParsingException(Exception):
         return "ParsingException url=" + self.url + " layers=" + str(self.layers) + " message=" + self.message
 
 
-events_cache = {}
+def event_base_link(actor_name: str, actor_id: str) -> str:
+    return "https://www.eventernote.com/actors/" + quote(actor_name) + "/" + actor_id + "/events"
+
+
+EVENTS_CACHE = {}
 
 
 def events(actor_name: str, actor_id: str) -> List[Dict]:
-    if actor_name in events_cache\
-            and current_seconds() < events_cache[actor_name]['last_crawl_seconds'] + EVENT_EXPIRE_SECONDS:
+    if actor_name in EVENTS_CACHE\
+            and current_seconds() < EVENTS_CACHE[actor_name]['last_crawl_seconds'] + EVENT_EXPIRE_SECONDS:
         logger.info("Events not expired for actor_name=" + actor_name + " actor_id=" + actor_id)
-        return events_cache[actor_name]['data']
+        return EVENTS_CACHE[actor_name]['data']
 
     logger.info("Crawling events for actor_name=" + actor_name + " actor_id=" + actor_id)
     res = []
     page = 1
 
     while True:
-        url = "https://www.eventernote.com/actors/" + quote(actor_name) + "/" + actor_id + "/events?actor_id="\
-              + actor_id + "&limit=" + str(EVENT_CRAWLING_LIMIT) + "&page=" + str(page)
+        url = event_base_link(actor_name=actor_name, actor_id=actor_id)\
+              + "?actor_id=" + actor_id\
+              + "&limit=" + str(EVENT_CRAWLING_LIMIT)\
+              + "&page=" + str(page)
         logger.info("Crawling " + url)
         ex = ParsingException(url)
 
@@ -109,9 +118,9 @@ def events(actor_name: str, actor_id: str) -> List[Dict]:
             })
         page += 1
 
-    events_cache[actor_name] = {}
-    events_cache[actor_name]['last_crawl_seconds'] = current_seconds()
-    events_cache[actor_name]['data'] = res
+    EVENTS_CACHE[actor_name] = {}
+    EVENTS_CACHE[actor_name]['last_crawl_seconds'] = current_seconds()
+    EVENTS_CACHE[actor_name]['data'] = res
 
     logger.info("Crawled " + str(len(res)) + " events for actor_name=" + actor_name + " actor_id=" + actor_id)
     return res
@@ -123,3 +132,26 @@ app = Flask(__name__)
 @app.route('/json/<name>/<_id>')
 def json(name: str, _id: str):
     return jsonify(events(actor_name=name, actor_id=_id))
+
+
+@app.route('/rss/<name>/<_id>')
+def rss(name: str, _id: str):
+    fg = FeedGenerator()
+    events_link = event_base_link(actor_name=name, actor_id=_id)
+    fg.id(events_link)
+    fg.title(name + "のイベント・ライブ情報一覧")
+    fg.description(name + "のイベント・ライブ情報一覧")
+    fg.link(href=events_link, rel='alternate')
+    fg.language("ja")
+    for event in events(actor_name=name, actor_id=_id):
+        fe = fg.add_entry()
+        fe.id(str(event['id']))
+        fe.link(href="https://www.eventernote.com/events/" + str(event['id']))
+        fe.title(event['title'])
+        fe.pubDate(datetime(
+            year=event['year'],
+            month=event['month'],
+            day=event['day'],
+            tzinfo=pytz.timezone("Asia/Tokyo")
+        ))
+    return fg.rss_str(pretty=True)
