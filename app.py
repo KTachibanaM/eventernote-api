@@ -28,6 +28,7 @@ logger.info("EVENT_EXPIRE_SECONDS=" + str(EVENT_EXPIRE_SECONDS))
 EVENT_CRAWLING_LIMIT = 100
 EVENT_LINK_PREFIX = "/events/"
 date_re = re.compile("(\d{4})-(\d{2})-(\d{2})")
+time_re = re.compile("開場 (\d{2}):(\d{2}) 開演 (\d{2}):(\d{2}) 終演 (\d{2}):(\d{2})")
 
 
 class ParsingException(Exception):
@@ -51,6 +52,10 @@ class ParsingException(Exception):
         logger.error(str(self))
         raise self
 
+    def warn_me(self, message: str):
+        self.message = message
+        logger.warning(str(self))
+
     def __str__(self):
         return "ParsingException url=" + self.url + " layers=" + str(self.layers) + " message=" + self.message
 
@@ -69,7 +74,7 @@ def events(actor_name: str, actor_id: str) -> List[Dict]:
         return EVENTS_CACHE[actor_name]['data']
 
     logger.info("Crawling events for actor_name=" + actor_name + " actor_id=" + actor_id)
-    res = []
+    all_events = []
     page = 1
 
     while True:
@@ -109,21 +114,55 @@ def events(actor_name: str, actor_id: str) -> List[Dict]:
             _id = title_a["href"][len(EVENT_LINK_PREFIX):]
             title = title_a.getText()
 
-            res.append({
+            cur_event = {
                 "id": _id,
                 "year": year,
                 "month": month,
                 "day": day,
                 "title": title
-            })
+            }
+
+            place_a = event_li.select_one("div.event > div.place > a")
+            if place_a:
+                cur_event["place"] = place_a.getText()
+            else:
+                event_li_ex.warn_me("cannot find place_a")
+
+            time_span = event_li.select_one("div.event > div.place > span.s")
+            if time_span:
+                time_text = time_span.getText()
+                time_match_group = time_re.match(time_text)
+                if time_match_group:
+                    time_matches = time_match_group.groups()
+                    if len(time_matches) != 6:
+                        event_li_ex.warn_me("time_text matches are not of length 6")
+                    else:
+                        cur_event["open_time"] = {
+                            "hour": int(time_matches[0]),
+                            "minute": int(time_matches[1])
+                        }
+                        cur_event["start_time"] = {
+                            "hour": int(time_matches[2]),
+                            "minute": int(time_matches[3])
+                        }
+                        cur_event["end_time"] = {
+                            "hour": int(time_matches[4]),
+                            "minute": int(time_matches[5])
+                        }
+                else:
+                    event_li_ex.warn_me("cannot match time_text")
+            else:
+                event_li_ex.warn_me("cannot find time_span")
+
+            all_events.append(cur_event)
         page += 1
 
     EVENTS_CACHE[actor_name] = {}
     EVENTS_CACHE[actor_name]['last_crawl_seconds'] = current_seconds()
-    EVENTS_CACHE[actor_name]['data'] = res
+    EVENTS_CACHE[actor_name]['data'] = all_events
 
-    logger.info("Crawled " + str(len(res)) + " events for actor_name=" + actor_name + " actor_id=" + actor_id)
-    return res
+    logger.info("Crawled " + str(len(all_events)) + " events for actor_name=" + actor_name + " actor_id=" + actor_id)
+    return all_events
 
 
 app = Flask(__name__)
@@ -168,7 +207,7 @@ def rss(name: str, _id: str):
         fe = fg.add_entry()
         fe.id(str(event['id']))
         fe.link(href="https://www.eventernote.com/events/" + str(event['id']))
-        fe.title(event['title'])
+        fe.title(f"{event['year']}/{event['month']}/{event['day']} {event['title']}")
         fe.pubDate(datetime(
             year=event['year'],
             month=event['month'],
