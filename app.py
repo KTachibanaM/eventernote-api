@@ -9,15 +9,16 @@ from ics import Event as iCalEvent
 from flask import Flask, jsonify
 from library.events import cached_events, event_link, event_base_link
 from library.logging import config_logger
-from library.worker import work
+from library.worker import start_worker
 
 app = Flask(__name__)
-config_logger(app.logger)
 
 EVENTS_CACHE = {}
 
 EVENT_EXPIRE_SECONDS = int(os.environ.get("EVENT_EXPIRE_SECONDS", 6 * 60 * 60))
 app.logger.info("EVENT_EXPIRE_SECONDS=" + str(EVENT_EXPIRE_SECONDS))
+
+start_worker(EVENTS_CACHE, EVENT_EXPIRE_SECONDS)
 
 
 @app.route('/')

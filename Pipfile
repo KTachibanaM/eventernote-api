@@ -12,6 +12,7 @@ pytz = "==2018.7"
 ics = "==0.4"
 arrow = "==0.4.2"
 Flask = "==1.0.2"
+apscheduler = "*"
 
 [requires]
 python_version = "3.7"

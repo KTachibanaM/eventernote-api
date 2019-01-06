@@ -134,10 +134,7 @@ def cached_events(
     if local_id in events_cache:
         return events_cache[actor_name]['data']
 
-    new_events = events(
-        actor_name=actor_name,
-        actor_id=actor_id
-    )
+    new_events = events(actor_name=actor_name, actor_id=actor_id)
 
     events_cache[local_id] = {}
     events_cache[local_id]['data'] = new_events
