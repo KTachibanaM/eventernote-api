@@ -1,6 +1,6 @@
 import pytz
 import re
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
 from urllib.parse import quote
@@ -128,16 +128,24 @@ def event_link(event_id: str):
 def cached_events(
     actor_name: str,
     actor_id: str,
-    events_cache: dict,
+    events_cache: Dict,
 ):
     local_id = (actor_name, actor_id)
+
     if local_id in events_cache:
-        return events_cache[actor_name]['data']
+        logger.info(f"{actor_name} is cached")
+        return events_cache[local_id]['data']
 
+    logger.info(f"{actor_name} is absent, locking and crawling for the first time")
+    events_cache[local_id] = {
+        'locked': True,
+        'data': None
+    }
     new_events = events(actor_name=actor_name, actor_id=actor_id)
-
-    events_cache[local_id] = {}
-    events_cache[local_id]['data'] = new_events
+    events_cache[local_id] = {
+        'locked': False,
+        'data': new_events
+    }
     
     return new_events
 

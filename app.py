@@ -12,6 +12,7 @@ from library.logging import config_logger
 from library.worker import start_worker
 
 app = Flask(__name__)
+config_logger(app.logger)
 
 EVENTS_CACHE = {}
 
@@ -37,7 +38,7 @@ def debug():
     return jsonify({
         'events_cache': {
             'actors_size': len(EVENTS_CACHE.keys()),
-            'actors': list(map(lambda k: f"{k[0]},{k[1]}", EVENTS_CACHE.keys())),
+            'actors': list(map(lambda k: k[0], EVENTS_CACHE.keys())),
             'events_size': sum(map(lambda a: len(a['data']), list(EVENTS_CACHE.values())))
         }
     })
