@@ -25,11 +25,19 @@ start_worker(EVENTS_CACHE, EVENT_EXPIRE_SECONDS)
 @app.route('/')
 def index():
     return """
-I'am alive!<br/>
-<a href="/json/三森すずこ/2634">/json/三森すずこ/2634</a> Events for 三森すずこ(id=2634) in JSON<br/>
-<a href="/rss/三森すずこ/2634">/rss/三森すずこ/2634</a> Events for 三森すずこ(id=2634) in RSS<br/>
-<a href="/ical/三森すずこ/2634">/ical/三森すずこ/2634</a> Events for 三森すずこ(id=2634) in ical<br/>
-<a href="/debug">/debug</a>
+<!DOCTYPE html>
+<html lang="jp">
+<head>
+    <title>eventernote-api</title>
+</head>
+<body>
+    I'am alive!<br/>
+    <a href="/json/三森すずこ/2634">/json/三森すずこ/2634</a> Events for 三森すずこ(id=2634) in JSON<br/>
+    <a href="/rss/三森すずこ/2634">/rss/三森すずこ/2634</a> Events for 三森すずこ(id=2634) in RSS<br/>
+    <a href="/ical/三森すずこ/2634">/ical/三森すずこ/2634</a> Events for 三森すずこ(id=2634) in ical<br/>
+    <a href="/debug">/debug</a>
+</body>
+</html>
 """
 
 
