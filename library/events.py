@@ -125,17 +125,30 @@ def event_link(event_id: str):
     return f"https://www.eventernote.com/events/{event_id}"
 
 
-def events(
-        actor_name: str,
-        actor_id: str,
-        events_cache: dict,
-        event_expire_seconds: int
-) -> List[Event]:
-    if actor_name in events_cache\
-            and current_seconds() < events_cache[actor_name]['last_crawl_seconds'] + event_expire_seconds:
-        logger.info("Events not expired for actor_name=" + actor_name + " actor_id=" + actor_id)
+def cached_events(
+    actor_name: str,
+    actor_id: str,
+    events_cache: dict,
+):
+    local_id = (actor_name, actor_id)
+    if local_id in events_cache:
         return events_cache[actor_name]['data']
 
+    new_events = events(
+        actor_name=actor_name,
+        actor_id=actor_id
+    )
+
+    events_cache[local_id] = {}
+    events_cache[local_id]['data'] = new_events
+    
+    return new_events
+
+
+def events(
+        actor_name: str,
+        actor_id: str
+) -> List[Event]:
     logger.info("Crawling events for actor_name=" + actor_name + " actor_id=" + actor_id)
     all_events = []
     page = 1
@@ -242,10 +255,6 @@ def events(
 
             all_events.append(cur_event)
         page += 1
-
-    events_cache[actor_name] = {}
-    events_cache[actor_name]['last_crawl_seconds'] = current_seconds()
-    events_cache[actor_name]['data'] = all_events
 
     logger.info("Crawled " + str(len(all_events)) + " events for actor_name=" + actor_name + " actor_id=" + actor_id)
     return all_events
