@@ -1,3 +1,4 @@
+import time
 import logging as xlogging
 from typing import Dict
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -21,6 +22,7 @@ def work(
                 logger.info(f"{actor_name} is not locked, locking and crawling")
                 events_cache[local_id]['locked'] = True
                 events_cache[local_id]['data'] = events(actor_name=actor_name, actor_id=actor_id)
+                events_cache[local_id]['lastCrawlInSeconds'] = time.time()
                 events_cache[local_id]['locked'] = False
 
 def start_worker(

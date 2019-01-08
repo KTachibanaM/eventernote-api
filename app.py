@@ -2,6 +2,8 @@ import logging as xlogging
 import os
 import pytz
 import threading
+import time
+from datetime import timedelta
 from feedgen.feed import FeedGenerator
 from datetime import datetime
 from ics import Calendar
@@ -47,6 +49,14 @@ def debug():
         'events_cache': {
             'actors_size': len(EVENTS_CACHE.keys()),
             'actors': list(map(lambda k: k[0], EVENTS_CACHE.keys())),
+            'actors_lock': dict(map(lambda kv: (
+                kv[0][0],
+                kv[1]['locked']
+            ), EVENTS_CACHE.items())),
+            'actors_last_crawl': dict(map(lambda kv: (
+                kv[0][0],
+                str(timedelta(seconds=(time.time() - kv[1]['lastCrawlInSeconds'])))
+            ), EVENTS_CACHE.items())),
             'events_size': sum(map(lambda a: len(a['data']), list(EVENTS_CACHE.values())))
         }
     })

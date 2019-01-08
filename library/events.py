@@ -1,5 +1,6 @@
 import pytz
 import re
+import time
 from typing import List, Tuple, Optional, Dict
 from bs4 import BeautifulSoup
 from urllib.request import urlopen
@@ -139,12 +140,14 @@ def cached_events(
     logger.info(f"{actor_name} is absent, locking and crawling for the first time")
     events_cache[local_id] = {
         'locked': True,
-        'data': None
+        'data': [],
+        'lastCrawlInSeconds': 0
     }
     new_events = events(actor_name=actor_name, actor_id=actor_id)
     events_cache[local_id] = {
         'locked': False,
-        'data': new_events
+        'data': new_events,
+        'lastCrawlInSeconds': time.time()
     }
     
     return new_events
