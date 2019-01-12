@@ -8,6 +8,7 @@ from .events import events
 logger = xlogging.getLogger("worker")
 config_logger(logger)
 
+
 def work(
     events_cache: Dict
 ):
@@ -24,6 +25,7 @@ def work(
                 events_cache[local_id]['data'] = events(actor_name=actor_name, actor_id=actor_id)
                 events_cache[local_id]['lastCrawlInSeconds'] = time.time()
                 events_cache[local_id]['locked'] = False
+
 
 def start_worker(
     events_cache: Dict,
