@@ -1,6 +1,7 @@
 import sys
 import logging as xlogging
 
+
 def config_logger(logger):
     logger.setLevel(xlogging.INFO)
     handler = xlogging.StreamHandler(stream=sys.stdout)

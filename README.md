@@ -2,12 +2,13 @@
 Crawl eventernote.com and expose JSON or RSS
 
 ## Dependencies
-* `Python`
+* `Python 3.7`
 * `pipenv`
 
 ## Run
 ```
-./dev.sh
+pipenv install
+FLASK_ENV=development pipenv run python app.py
 ```
 * Actor events as JSON: [`localhost:5000/json/三森すずこ/2634`](localhost:5000/json/三森すずこ/2634)
 * Actor events as RSS: [`localhost:5000/rss/三森すずこ/2634`](localhost:5000/rss/三森すずこ/2634)
