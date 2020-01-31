@@ -8,7 +8,7 @@ verify_ssl = true
 [packages]
 jinja2 = {version = ">= 2.10.1"}
 beautifulsoup4 = "==4.6.3"
-feedgen = "==0.7.0"
+feedgen = "==0.9.0"
 pytz = "==2018.7"
 ics = "==0.4"
 arrow = "==0.4.2"
