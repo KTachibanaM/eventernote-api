@@ -31,7 +31,7 @@ class ParsingException(Exception):
             logger.error("ParsingException", extra={
                 'url': self.url,
                 'layers': self.layers,
-                'message': self.message
+                '_message': self.message
             })
         else:
             print(str(self))
@@ -40,11 +40,6 @@ class ParsingException(Exception):
     def warn_me(self, message: str):
         self.message = message
         print(str(self))
-        logger.warning("ParsingException", extra={
-            'url': self.url,
-            'layers': self.layers,
-            'message': self.message
-        })
 
     def __str__(self):
         return "ParsingException url=" + self.url + " layers=" + str(self.layers) + " message=" + self.message
