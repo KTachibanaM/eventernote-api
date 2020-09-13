@@ -1,8 +1,7 @@
-import logging as xlogging
 import os
 import pytz
-import threading
 import time
+import sentry_sdk
 from datetime import timedelta
 from feedgen.feed import FeedGenerator
 from datetime import datetime
@@ -22,6 +21,9 @@ EVENT_EXPIRE_SECONDS = int(os.environ.get("EVENT_EXPIRE_SECONDS", 6 * 60 * 60))
 app.logger.info("EVENT_EXPIRE_SECONDS=" + str(EVENT_EXPIRE_SECONDS))
 
 start_worker(EVENTS_CACHE, EVENT_EXPIRE_SECONDS)
+
+if 'SENTRY_DSN' in os.environ:
+    sentry_sdk.init(os.environ['SENTRY_DSN'])
 
 
 @app.route('/')

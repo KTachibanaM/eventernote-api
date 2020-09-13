@@ -1,3 +1,4 @@
+import os
 import time
 import copy
 from . import logger
@@ -12,6 +13,7 @@ class ParsingException(Exception):
         self.url = url
         self.layers = []
         self.message = "No message"
+        self.sentry_enabled = 'SENTRY_DSN' in os.environ
 
     def clone(self):
         new_ex = ParsingException(self.url)
@@ -25,12 +27,24 @@ class ParsingException(Exception):
 
     def raise_me(self, message: str):
         self.message = message
-        logger.error(str(self))
+        if self.sentry_enabled:
+            logger.error("ParsingException", extra={
+                'url': self.url,
+                'layers': self.layers,
+                'message': self.message
+            })
+        else:
+            print(str(self))
         raise self
 
     def warn_me(self, message: str):
         self.message = message
-        logger.warning(str(self))
+        print(str(self))
+        logger.warning("ParsingException", extra={
+            'url': self.url,
+            'layers': self.layers,
+            'message': self.message
+        })
 
     def __str__(self):
         return "ParsingException url=" + self.url + " layers=" + str(self.layers) + " message=" + self.message

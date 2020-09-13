@@ -25,3 +25,4 @@ FLASK_ENV=development python app.py
 ## Configurations
 * Environment variables
     * `EVENT_EXPIRE_SECONDS`: Number of seconds before in-memory cache for events expires for an actor. Default to 6 hours
+    * `SENTRY_DSN`: Sentry DSN. If not set, errors will not be sent to Sentry
