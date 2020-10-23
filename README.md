@@ -1,5 +1,7 @@
 **DEPRECATED**
+
 The project has been deprecated in favor of an RSS route in RSSHub
+
 See doc here https://docs.rsshub.app/anime.html#eventernote
 
 # eventernote-api
